@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiUrl } from "./api";
 import { readContent } from "./content";
 
 export function usePublishedContent() {
@@ -11,7 +12,7 @@ export function usePublishedContent() {
     async function load() {
       const id = ++request;
       try {
-        const response = await fetch("/api/content", { cache: "no-store" });
+        const response = await fetch(apiUrl("/api/content"), { cache: "no-store" });
         if (!response.ok) return;
         const data = await response.json();
         if (!active || id !== request) return;

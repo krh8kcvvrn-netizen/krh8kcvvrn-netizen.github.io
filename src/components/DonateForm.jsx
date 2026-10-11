@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { wallets } from "../data";
 import { useGifts } from "../gift-context";
+import { apiUrl } from "../lib/api";
 import { makeReference } from "../lib/money";
 import { usePublishedWallets } from "../lib/usePublishedWallets";
 
@@ -80,7 +81,7 @@ export default function DonateForm() {
     }
     setReporting(true);
     try {
-      const response = await fetch("/api/donations", {
+      const response = await fetch(apiUrl("/api/donations"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount, asset }),

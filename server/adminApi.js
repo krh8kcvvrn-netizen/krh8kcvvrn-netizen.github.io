@@ -223,8 +223,27 @@ function cookies(req) {
   return out;
 }
 
+const publicSite = "https://krh8kcvvrn-netizen.github.io";
+
 function clientIp(req) {
+  const cloudflare = req.headers["cf-connecting-ip"];
+  if (typeof cloudflare === "string" && cloudflare.trim()) return cloudflare.trim();
   return req.socket?.remoteAddress || "local";
+}
+
+function isPublicApi(pathname) {
+  return pathname === "/api/wallets"
+    || pathname === "/api/content"
+    || pathname === "/api/donations"
+    || /^\/api\/wallets\/qr\/(btc|usdt)$/.test(pathname);
+}
+
+function allowPublicSite(req, res) {
+  if (req.headers.origin !== publicSite) return;
+  res.setHeader("Access-Control-Allow-Origin", publicSite);
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
 function locked(ip) {
@@ -281,6 +300,14 @@ async function handle(req, res, next) {
 
   try {
     const method = req.method || "GET";
+    if (isPublicApi(url.pathname)) {
+      allowPublicSite(req, res);
+      if (method === "OPTIONS") {
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+    }
     const store = readStore();
     const signedIn = Boolean(store.password && sessionToken(req));
 

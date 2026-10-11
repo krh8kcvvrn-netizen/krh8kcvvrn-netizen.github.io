@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { wallets } from "../data";
+import { apiUrl } from "./api";
 
 function seedAddress(id) {
   return wallets.find((wallet) => wallet.id === id)?.address?.trim() || "";
@@ -20,15 +21,15 @@ export function usePublishedWallets() {
     async function load() {
       const id = ++request;
       try {
-        const response = await fetch("/api/wallets", { cache: "no-store" });
+        const response = await fetch(apiUrl("/api/wallets"), { cache: "no-store" });
         if (!response.ok) return;
         const data = await response.json();
         if (!active || id !== request || !data) return;
         const next = {
           btc: typeof data.btc === "string" ? data.btc.trim() : "",
           usdt: typeof data.usdt === "string" ? data.usdt.trim() : "",
-          btcQr: typeof data.btcQr === "string" ? data.btcQr : "",
-          usdtQr: typeof data.usdtQr === "string" ? data.usdtQr : "",
+          btcQr: typeof data.btcQr === "string" && data.btcQr ? apiUrl(data.btcQr) : "",
+          usdtQr: typeof data.usdtQr === "string" && data.usdtQr ? apiUrl(data.usdtQr) : "",
         };
         setAddresses((current) => (
           current.btc === next.btc
